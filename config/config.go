@@ -22,9 +22,14 @@ func GetConfigure() *Configure {
 
 type Configure struct {
 	Title string `toml:"title"`
-	Mqtt  struct {
+	Proto struct {
+		TCP  string `toml:"tcp"`
+		Ws   string `toml:"ws"`
+		Mqtt string `toml:"mqtt"`
+	}
+	Mqtt struct {
 		Addr     string `toml:"addr"`
-		UserName string `toml:"user_name"`
+		UserName string `toml:"username"`
 		Password string `toml:"password"`
 		Expire   int    `toml:"expire"`
 	}

@@ -2,23 +2,50 @@ package main
 
 import (
 	"fmt"
-	"kafkaMq/kafkaTool/customer"
+	"kafkaMq/config"
 	"kafkaMq/kafkaTool/producer"
+	mqtt_producer "kafkaMq/mqttTool/producer"
 	"log"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/segmentio/kafka-go"
 )
 
 func main() {
-	// send()
-	read()
+	cfg := config.GetConfigure()
+	mqttPublisher := mqtt_producer.GetPublisher(cfg)
+	if token := mqttPublisher.Connect(); token.Wait() && token.Error() != nil {
+		log.Fatal(token.Error())
+		os.Exit(1)
+	}
+	defer mqttPublisher.Disconnect(250)
 
+	// 订阅主题
+	if token := mqttPublisher.Subscribe("order", 2, nil); token.Wait() && token.Error() != nil {
+		log.Fatal(token.Error())
+		os.Exit(1)
+	}
+	// count := 2
+	// for i := 0; i < count; i++ {
+	// 	token := mqttPublisher.Publish("order", 1, false, fmt.Sprintf("%d member", i))
+	// 	token.Wait()
+	// }
+
+	// 处理系统信号，以便在接收到SIGINT或SIGTERM时优雅地关闭程序
+	signalChan := make(chan os.Signal, 1)
+	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
+
+	<-signalChan
+	fmt.Println("Received signal, shutting down...")
 }
 
 func read() {
-	reader := customer.GetCustomer()
-	go reader.Read()
+	// reader := customer.GetCustomer()
+
+	// go reader.Read()
 
 	// go send()
 

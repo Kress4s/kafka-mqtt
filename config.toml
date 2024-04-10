@@ -1,5 +1,15 @@
 title = "demo"
 
+[proto]
+tcp = "tcp:"
+ws = "ws:"
+mqtt = "mqtt:"
+
 [kafka]
 addr = "121.41.38.13"
 port = "9092"
+
+[mqtt]
+addr = "121.41.38.13:1883"
+username = "test"
+password = "test"
