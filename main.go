@@ -4,54 +4,51 @@ import (
 	"fmt"
 	"kafkaMq/config"
 	"kafkaMq/kafkaTool/producer"
+	mqtt_tool "kafkaMq/mqttTool"
+	mqtt_customer "kafkaMq/mqttTool/customer"
 	mqtt_producer "kafkaMq/mqttTool/producer"
 	"log"
 	"os"
 	"os/signal"
 	"syscall"
-	"time"
 
 	"github.com/segmentio/kafka-go"
 )
 
 func main() {
 	cfg := config.GetConfigure()
-	mqttPublisher := mqtt_producer.GetPublisher(cfg)
-	if token := mqttPublisher.Connect(); token.Wait() && token.Error() != nil {
-		log.Fatal(token.Error())
-		os.Exit(1)
+	clientID := "123"
+	client := mqtt_tool.GetClient(cfg, clientID)
+	defer mqtt_tool.DisClientConnect(client, 250)
+	mqtt_customer.Subscriber(client, "order", 2)
+	count := 2
+	for i := 0; i < count; i++ {
+		mqtt_producer.PublishMessage(client, fmt.Sprintf("%d member", i), "order", 1, false)
 	}
-	defer mqttPublisher.Disconnect(250)
+	s := waitForSignal()
+	fmt.Printf("Received signal,[%+v], shutting down...", s)
+}
 
-	// 订阅主题
-	if token := mqttPublisher.Subscribe("order", 2, nil); token.Wait() && token.Error() != nil {
-		log.Fatal(token.Error())
-		os.Exit(1)
-	}
-	// count := 2
-	// for i := 0; i < count; i++ {
-	// 	token := mqttPublisher.Publish("order", 1, false, fmt.Sprintf("%d member", i))
-	// 	token.Wait()
-	// }
-
+func waitForSignal() os.Signal {
 	// 处理系统信号，以便在接收到SIGINT或SIGTERM时优雅地关闭程序
 	signalChan := make(chan os.Signal, 1)
+	defer close(signalChan)
 	signal.Notify(signalChan, os.Interrupt, syscall.SIGTERM)
-
-	<-signalChan
-	fmt.Println("Received signal, shutting down...")
+	s := <-signalChan
+	signal.Stop(signalChan)
+	return s
 }
 
-func read() {
-	// reader := customer.GetCustomer()
+// func read() {
+// reader := customer.GetCustomer()
 
-	// go reader.Read()
+// go reader.Read()
 
-	// go send()
+// go send()
 
-	time.Sleep(100 * time.Second)
+// time.Sleep(100 * time.Second)
 
-}
+// }
 
 func send() {
 	topics := []string{"orderInfo", "test1", "test2"}
@@ -77,12 +74,3 @@ func send() {
 	}
 	log.Print("send succeed")
 }
-
-// func waitForSignal() os.Signal {
-// 	signalChan := make(chan os.Signal, 1)
-// 	defer close(signalChan)
-// 	signal.Notify(signalChan, syscall.SIGINT, syscall.SIGTERM)
-// 	s := <-signalChan
-// 	signal.Stop(signalChan)
-// 	return s
-// }
