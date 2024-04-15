@@ -13,7 +13,8 @@ var (
 	once sync.Once
 )
 
-var topics = []string{"orderInfo", "test1", "test2"}
+// var topics = []string{"orderInfo", "test1", "test2"}
+var topics = []string{"crazy"}
 
 func GetKafkaWriteConn(cfg *config.Configure) *kafka.Writer {
 	once.Do(func() {
@@ -27,6 +28,7 @@ func GetKafkaWriteConn(cfg *config.Configure) *kafka.Writer {
 
 			// Hash 哈希分配，实现相同的key能分发到相同topic中同一个partition中
 			// Balancer: &kafka.Hash{},
+			RequiredAcks: kafka.RequireAll,
 		}
 	})
 	// rewrite single conn for different topic by message provide
@@ -35,9 +37,11 @@ func GetKafkaWriteConn(cfg *config.Configure) *kafka.Writer {
 
 func GetKafkaReadConn(cfg *config.Configure) *kafka.Reader {
 	r := kafka.NewReader(kafka.ReaderConfig{
-		GroupID:     "t1",
+		GroupID:     "c1",
 		GroupTopics: topics,
-		Brokers:     []string{strings.Join([]string{cfg.Kafka.Addr, cfg.Kafka.Port}, ":")},
+		// 多个broker
+		Brokers: []string{strings.Join([]string{cfg.Kafka.Addr, cfg.Kafka.Port}, ":"), "121.41.38.13:29092",
+			"121.41.38.13:39092"},
 		// StartOffset: 0,
 	})
 	return r

@@ -1,45 +1,53 @@
-package customer
+package kafka_customer
 
 import (
 	"context"
+	"database/sql"
 	"fmt"
 	"kafkaMq/config"
+	"kafkaMq/database"
 	kafka_tool "kafkaMq/kafkaTool"
 	"log"
-	"time"
 
 	"github.com/segmentio/kafka-go"
 )
 
 type Customer struct {
 	ctx    context.Context
-	Reader *kafka.Reader
-	Addr   string
-	Port   string
+	reader *kafka.Reader
+	db     *sql.DB
 }
 
 func GetCustomer() *Customer {
 	cfg := config.GetConfigure()
 	return &Customer{
 		ctx:    context.Background(),
-		Reader: kafka_tool.GetKafkaReadConn(cfg),
+		reader: kafka_tool.GetKafkaReadConn(cfg),
+		db:     database.GetMysqlDBDriver(),
 	}
 }
 
 func (c *Customer) Read() {
 	defer func() {
-		if err := c.Reader.Close(); err != nil {
+		if err := c.reader.Close(); err != nil {
 			panic(err)
 		}
 	}()
 	for {
 		log.Print("starting read...")
-		m, err := c.Reader.ReadMessage(c.ctx)
+		m, err := c.reader.ReadMessage(c.ctx)
 		if err != nil {
 			break
 		}
 		fmt.Printf("message at topic/partition/offset %v/%v/%v: %s = %s\n", m.Topic, m.Partition, m.Offset,
 			string(m.Key), string(m.Value))
-		time.Sleep(1 * time.Second)
+		// into database
+		// sql := "insert into p_test(counts) values(1)"
+		sql := string(m.Value)
+		_, err = c.db.Exec(sql)
+		if err != nil {
+			panic(err)
+		}
+		// time.Sleep(1 * time.Second)
 	}
 }

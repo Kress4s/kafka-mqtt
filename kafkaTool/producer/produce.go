@@ -1,4 +1,4 @@
-package producer
+package kafka_producer
 
 import (
 	"context"
@@ -41,7 +41,8 @@ func GetProducer() *Producer {
 
 func (p *Producer) Send(msg ...kafka.Message) error {
 	err := p.Writer.WriteMessages(p.ctx, msg...)
-	defer p.Writer.Close()
+	// 这个地方不能关闭
+	// defer p.Writer.Close()
 	if err != nil {
 		return err
 	}

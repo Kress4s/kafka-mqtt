@@ -34,7 +34,7 @@ type Configure struct {
 		Expire   int    `toml:"expire"`
 	}
 	Database struct {
-		// Type string `toml:"type"`
+		Type string `toml:"type"`
 		// DSN  struct {
 		Host         string `toml:"host"`
 		DB           string `toml:"db" `

@@ -7,9 +7,19 @@ mqtt = "mqtt:"
 
 [kafka]
 addr = "121.41.38.13"
-port = "9092"
+port = "19092"
 
 [mqtt]
 addr = "121.41.38.13:1883"
 username = "test"
 password = "test"
+
+[database]
+host = "www.netfishes.top"
+port = 3666
+type = "mysql"
+db = "performance"
+username = "root"
+password = "admin"
+max_idle_conns = 10
+max_open_conns = 1000
