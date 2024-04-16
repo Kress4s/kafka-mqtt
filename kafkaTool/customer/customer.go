@@ -7,7 +7,6 @@ import (
 	"kafkaMq/config"
 	"kafkaMq/database"
 	kafka_tool "kafkaMq/kafkaTool"
-	"log"
 
 	"github.com/segmentio/kafka-go"
 )
@@ -34,7 +33,6 @@ func (c *Customer) Read() {
 		}
 	}()
 	for {
-		log.Print("starting read...")
 		m, err := c.reader.ReadMessage(c.ctx)
 		if err != nil {
 			break
@@ -48,6 +46,5 @@ func (c *Customer) Read() {
 		if err != nil {
 			panic(err)
 		}
-		// time.Sleep(1 * time.Second)
 	}
 }

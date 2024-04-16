@@ -28,7 +28,7 @@ func GetKafkaWriteConn(cfg *config.Configure) *kafka.Writer {
 
 			// Hash 哈希分配，实现相同的key能分发到相同topic中同一个partition中
 			// Balancer: &kafka.Hash{},
-			RequiredAcks: kafka.RequireAll,
+			RequiredAcks: kafka.RequireOne,
 		}
 	})
 	// rewrite single conn for different topic by message provide
@@ -37,12 +37,16 @@ func GetKafkaWriteConn(cfg *config.Configure) *kafka.Writer {
 
 func GetKafkaReadConn(cfg *config.Configure) *kafka.Reader {
 	r := kafka.NewReader(kafka.ReaderConfig{
-		GroupID:     "c1",
+		GroupID:     "cc1",
 		GroupTopics: topics,
 		// 多个broker
 		Brokers: []string{strings.Join([]string{cfg.Kafka.Addr, cfg.Kafka.Port}, ":"), "121.41.38.13:29092",
 			"121.41.38.13:39092"},
-		// StartOffset: 0,
+		// 当一个特定的partition没有commited offset时(比如第一次读一个partition，之前没有commit过)，
+		// 通过StartOffset指定从第一个还是最后一个位置开始消费。StartOffset的取值要么是FirstOffset要么是LastOffset，
+		// LastOffset表示Consumer启动之前生成的老数据不管了。
+		// 仅当指定了GroupID时，StartOffset才生效。
+		StartOffset: kafka.FirstOffset,
 	})
 	return r
 }

@@ -18,7 +18,8 @@ func GetClient(cfg *config.Configure, clientID string) mqtt.Client {
 		opt.SetClientID(clientID)
 		opt.SetUsername(cfg.Mqtt.UserName)
 		opt.SetPassword(cfg.Mqtt.Password)
-		opt.CleanSession = false
+		// opt.SetCleanSession(false)
+		// opt.CleanSession = false
 		// opt.SetDefaultPublishHandler(customer.OnMessageReceived)
 		client := mqtt.NewClient(opt)
 		if token := client.Connect(); token.Wait() && token.Error() != nil {
