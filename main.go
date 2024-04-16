@@ -25,15 +25,15 @@ func main() {
 		4. 读取入库结果
 	*/
 	cfg := config.GetConfigure()
-	clientID := "performance" // mqtt client_id
+	clientID := "xys" // mqtt client_id
 	mqtt_topic := "crazy1"
-	kafka_topic := "crazy"
+	kafka_topic := "crazy1"
 	// mqtt client
 	client := mqtt_tool.GetClient(cfg, clientID)
 	// 消费数据发送到kafka
 	go mqttCustomer(client, mqtt_topic, kafka_topic)
 	// 生产数据
-	// go mqttProduce(client, mqtt_topic)
+	go mqttProduce(client, mqtt_topic)
 	// 消费kafka数据到数据库
 	go kafkaConsume()
 
@@ -50,23 +50,17 @@ func mqttProduce(client mqtt.Client, topic string) {
 	// 	client.Disconnect(2000)
 	// 	log.Println("mqtt client closed...,exiting...")
 	// }(client)
-	i := 0
-	total := 50
+	i := 1
+	total := 100
 	for i = 0; i <= total; i++ {
-		// go func(client mqtt.Client, i int, topic string) {
-		// 	if ack := mqtt_producer.PublishMessage(client, fmt.Sprintf("insert into p_test(counts) values(%d)", i), topic,
-		// 		2, false); !ack {
-		// 		log.Printf("mqtt publish[%d] is failed....", i)
-		// 		// continue
-		// 	}
-		// 	log.Printf("mqtt publish[%d] is succeed....", i)
-		// }(client, ii, topic)
-
-		if ack := mqtt_producer.PublishMessage(client, fmt.Sprintf("insert into p_test(counts) values(%d)", i), topic,
-			1, false); !ack {
-			log.Printf("mqtt publish[%d] is failed....", i)
-			// continue
-		}
+		go func(client mqtt.Client, i int, topic string) {
+			if ack := mqtt_producer.PublishMessage(client, fmt.Sprintf("insert into p_test(counts) values(%d)", i), topic,
+				1, false); !ack {
+				log.Printf("mqtt publish[%d] is failed....", i)
+				// continue
+			}
+			log.Printf("mqtt publish[%d] is succeed....", i)
+		}(client, i, topic)
 		log.Printf("mqtt publish[%d] is succeed....", i)
 	}
 }
@@ -104,44 +98,4 @@ func waitForSignal() os.Signal {
 	s := <-signalChan
 	signal.Stop(signalChan)
 	return s
-}
-
-// func read() {
-// reader := customer.GetCustomer()
-
-// go reader.Read()
-
-// go send()
-
-// time.Sleep(100 * time.Second)
-
-// }
-
-// func send() {
-func main1() {
-	// topics := []string{"orderInfo", "test1", "test2"}
-	// topics := []string{"mp"}
-	sendCount := 10
-	p := kafka_producer.GetProducer()
-	defer p.Writer.Close()
-	for i := 0; i < sendCount; i++ {
-		message := make([]kafka.Message, 0)
-		message = append(
-			message, kafka.Message{
-				// Topic: "orderInfo",
-				Topic: "mp",
-				//分区是只读的，写消息时绝对不能设置分区
-				// Partition: 0,
-				// Value: []byte(fmt.Sprintf("hello kafka[%d]", i)),
-				Value: []byte("insert into p_test(counts) values(1)"),
-				// Value: []byte(fmt.Sprintf("orderID[%s]:已发货", order[i])),
-				// Key:   []byte("A"),
-				// Key: []byte(order[i]),
-			})
-		// send
-		if err := p.Send(message...); err != nil {
-			panic(err)
-		}
-	}
-	log.Print("send succeed")
 }

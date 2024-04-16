@@ -14,7 +14,7 @@ var (
 )
 
 // var topics = []string{"orderInfo", "test1", "test2"}
-var topics = []string{"crazy"}
+var topics = []string{"crazy1"}
 
 func GetKafkaWriteConn(cfg *config.Configure) *kafka.Writer {
 	once.Do(func() {
@@ -47,6 +47,7 @@ func GetKafkaReadConn(cfg *config.Configure) *kafka.Reader {
 		// LastOffset表示Consumer启动之前生成的老数据不管了。
 		// 仅当指定了GroupID时，StartOffset才生效。
 		StartOffset: kafka.FirstOffset,
+		// CommitInterval: time.Second,
 	})
 	return r
 }

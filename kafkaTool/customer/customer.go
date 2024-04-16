@@ -46,5 +46,6 @@ func (c *Customer) Read() {
 		if err != nil {
 			panic(err)
 		}
+		// c.reader.CommitMessages()
 	}
 }
