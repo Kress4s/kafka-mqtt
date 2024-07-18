@@ -14,6 +14,8 @@ kafka producer:
 	this file will generate message to kafka broker  to test kafka's function and performance
 */
 
+// test git push
+
 var (
 	once     sync.Once
 	producer Producer
